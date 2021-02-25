@@ -25,7 +25,7 @@ case $file_name in
     readonly github_repo_path=concourse/concourse
     ;;
   govc)
-    readonly github_project=vmware/govmomi
+    readonly github_repo_path=vmware/govmomi
     ;;
   om)
     readonly github_repo_path=pivotal-cf/om
