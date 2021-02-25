@@ -17,7 +17,7 @@ trap 'rm -rf "${download_dir}"' EXIT
   # e.g the part in caps: https://github.com/CONCOURSE/CONCOURSE
 
   # git_file_name_template
-  # the release file link template, which must be encase in single quotes
+  # the release file link template
   # e.g what appears after the trailing slash: https://github.com/${github_project}/releases/download/
   # For v7.0.0/fly-7.0.0-linux-amd64.tgz would be v${version}/fly-${version}-${os}-amd64.tgz
 
@@ -26,17 +26,21 @@ case $file_name in
     readonly github_project=vmware-tanzu/antrea
     readonly git_file_name_template="v${version}/antctl-${os}-x86_64"
     ;;
-  fly)
-    readonly github_project=concourse/concourse
-    readonly git_file_name_template="v${version}/fly-${version}-${os}-amd64.tgz"
+  bosh)
+    readonly github_project=cloudfoundry/bosh-cli
+    readonly git_file_name_template="v${version}/bosh-cli-${version}-${os}-amd64.tgz"
     ;;
   credhub)
     readonly github_project=cloudfoundry-incubator/credhub-cli
     readonly git_file_name_template="${version}/credhub-${os}-${version}.tgz"
     ;;
-  bosh)
-    readonly github_project=cloudfoundry/bosh-cli
-    readonly git_file_name_template="v${version}/bosh-cli-${version}-${os}-amd64.tgz"
+  fly)
+    readonly github_project=concourse/concourse
+    readonly git_file_name_template="v${version}/fly-${version}-${os}-amd64.tgz"
+    ;;
+  govc)
+    readonly github_project=vmware/govmomi
+    readonly git_file_name_template="v${product_version}/${product_name}_${OS}_amd64.gz"
     ;;
   om)
     readonly github_project=pivotal-cf/om

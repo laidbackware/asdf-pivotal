@@ -15,14 +15,17 @@ case $file_name in
   antctl)
     readonly github_repo_path=vmware-tanzu/antrea
     ;;
-  fly)
-    readonly github_repo_path=concourse/concourse
+  bosh)
+    readonly github_repo_path=cloudfoundry/bosh-cli
     ;;
   credhub)
     readonly github_repo_path=cloudfoundry-incubator/credhub-cli
     ;;
-  bosh)
-    readonly github_repo_path=cloudfoundry/bosh-cli
+  fly)
+    readonly github_repo_path=concourse/concourse
+    ;;
+  govc)
+    readonly github_project=vmware/govmomi
     ;;
   om)
     readonly github_repo_path=pivotal-cf/om
