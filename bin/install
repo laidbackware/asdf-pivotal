@@ -23,8 +23,8 @@ trap 'rm -rf "${download_dir}"' EXIT
 
 case $file_name in
   antctl)
-    readonly github_product=vmware-tanzu/antrea
-    readonly file_link_template="v${version}/antctl-${os}-x86_64"
+    readonly github_project=vmware-tanzu/antrea
+    readonly git_file_name_template="v${version}/antctl-${os}-x86_64"
     ;;
   fly)
     readonly github_project=concourse/concourse
