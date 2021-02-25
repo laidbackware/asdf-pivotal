@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-set -euxo pipefail
+set -euo pipefail
 
 # Detect the tool name based on the plugin directory name used by asdf
 readonly script_dir="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
@@ -46,7 +46,7 @@ function sort_versions() {
 }
 
 function list_all() {
-  # local versions
+  local versions
 
   local -r github_url="https://api.github.com/repos/${github_repo_path}/releases"
 
@@ -60,7 +60,8 @@ function list_all() {
   ret=0 && curl_response=$(eval "$curl_cmd" 2>&1) || ret="$?"
   if [[ $ret -eq 0 ]]; then
     # Fetch all tag names, and get only second column. Then remove all unnecesary characters.
-    echo $curl_response | grep -oE "tag_name\": *\".{1,15}\"," | sed 's/tag_name\": *\"//;s/\",//' | sort_versions
+    versions=$(echo $curl_response | grep -oE "tag_name\": *\".{1,15}\"," | sed 's/tag_name\": *\"//;s/\",//' | sort_versions)
+    echo $versions
 
   else
     echo "ERROR: Failure to collect versions for $file_name"
