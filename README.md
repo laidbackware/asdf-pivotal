@@ -1,2 +1,2 @@
-# asdf-fly
-Install fly cli with ASDF
+# asdf-github-tools
+ASDF plugin to install tools from github
