@@ -64,6 +64,9 @@ function install_binary() {
   local -r github_url="https://github.com/${github_project}/releases/download/$git_file_name_template"
   local -r downloaded_file="${download_dir}/${file_name}_download"
 
+  echo "Creating bin install directory"
+  mkdir -p $bin_install_path
+
   # Validate HTTP 200 OK on download by checking headers only
   # This enables failure handling whilst also printing download progress
   return=0 && check="$(curl --fail -L --head --connect-timeout 10 $github_url 2>&1)" || return="$?"
