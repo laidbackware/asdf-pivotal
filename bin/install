@@ -40,7 +40,7 @@ case $file_name in
     ;;
   govc)
     readonly github_project=vmware/govmomi
-    readonly git_file_name_template="v${product_version}/${product_name}_${OS}_amd64.gz"
+    readonly git_file_name_template="v${version}/govc_${os}_amd64.gz"
     ;;
   om)
     readonly github_project=pivotal-cf/om
