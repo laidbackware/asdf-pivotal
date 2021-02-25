@@ -13,7 +13,7 @@ readonly file_name="$(basename "$(dirname "${script_dir}")")"
 
 case $file_name in
   antctl)
-    readonly github_product=vmware-tanzu/antrea
+    readonly github_repo_path=vmware-tanzu/antrea
     ;;
   fly)
     readonly github_repo_path=concourse/concourse
