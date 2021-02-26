@@ -67,40 +67,63 @@ jobs:
         asdf install s5cmd latest
 
 
-  # test-0.7.8:
-  #   strategy:
-  #     matrix:
-  #       os: [ubuntu-latest, macos-latest]
-  #   runs-on: ${{ matrix.os }}
-  #   steps:
-  #   - name: Checkout code
-  #     uses: actions/checkout@v2
-  #   - name: Install asdf
-  #     run: git clone https://github.com/asdf-vm/asdf.git ~/asdf --branch v0.7.8
-  #   - name: Test plugin
-  #     run: |
-  #       set -e -u
-  #       . $HOME/.asdf/asdf.sh
-  #       set -x
-  #       echo "---> plugin-add"
-  #       asdf plugin-add ytt ./
-  #       asdf plugin-add kbld ./
-  #       asdf plugin-add kapp ./
-  #       asdf plugin-add kwt ./
-  #       asdf plugin-add vendir ./
-  #       asdf plugin-add imgpkg ./
-  #       asdf plugin-add json2k8s ./
-  #       echo "---> list-all"
-  #       asdf list-all ytt
-  #       asdf list-all kbld
-  #       asdf list-all kapp
-  #       asdf list-all kwt
-  #       asdf list-all vendir
-  #       asdf list-all imgpkg
-  #       asdf list-all json2k8s
-  #       # TODO does not work for some reason:
-  #       # echo "---> plugin-test"
-  #       # asdf plugin-test kwt ./ 'kwt version'
-  #       # asdf plugin-test ytt ./ 'ytt version'
-  #       # asdf plugin-test kapp ./ 'kapp version'
-  #       # asdf plugin-test vendir ./ 'vendir version'
+  test-0.6.3:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: Install asdf
+      run: git clone https://github.com/asdf-vm/asdf.git ~/asdf --branch v0.6.3
+    - name: Manually add plugings to repository
+      run: |
+        set -eux
+        . $HOME/asdf/asdf.sh
+        asdf plugin add kubectl
+        repo_dir=$HOME/asdf/repository/plugins
+        plugin_text="repository = https://github.com/laidbackware/asdf-github-tools"
+        echo $plugin_text > ${repo_dir}/antctl
+        echo $plugin_text > ${repo_dir}/bosh
+        echo $plugin_text > ${repo_dir}/credhub
+        echo $plugin_text > ${repo_dir}/fly
+        echo $plugin_text > ${repo_dir}/govc
+        echo $plugin_text > ${repo_dir}/om
+        echo $plugin_text > ${repo_dir}/pivnet
+        echo $plugin_text > ${repo_dir}/s5cmd
+    - name: Test plugin
+      run: |
+        set -e -u
+        . $HOME/.asdf/asdf.sh
+        set -x
+        echo "---> plugin-add"
+        asdf plugin-add antctl
+        asdf plugin-add bosh
+        asdf plugin-add credhub
+        asdf plugin-add fly
+        asdf plugin-add govc
+        asdf plugin-add om
+        asdf plugin-add pivnet
+        asdf plugin-add s5cmd
+
+        echo "---> list-all"
+        asdf list-all antctl
+        asdf list-all bosh
+        asdf list-all credhub
+        asdf list-all fly
+        asdf list-all govc
+        asdf list-all om
+        asdf list-all pivnet
+        asdf list-all s5cmd
+
+        asdf install antctl v0.13.0
+        asdf install bosh v6.4.1
+        asdf install credhub 2.9.0
+        asdf install fly v7.0.0
+        asdf install govc v0.24.0
+        asdf install om 7.2.0
+        asdf install pivnet v0.0.78
+        asdf install s5cmd v1.2.1
+
+        
