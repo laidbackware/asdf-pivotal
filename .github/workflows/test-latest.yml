@@ -76,7 +76,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
     - name: Install asdf
-      run: git clone https://github.com/asdf-vm/.asdf.git ~/asdf --branch v0.6.3
+      run: git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.6.3
     - name: Manually add plugings to repository
       run: |
         set -ex
@@ -119,13 +119,13 @@ jobs:
         asdf list-all pivnet
         asdf list-all s5cmd
 
-        asdf install antctl v0.13.0
-        asdf install bosh v6.4.1
+        asdf install antctl 0.13.0
+        asdf install bosh 6.4.1
         asdf install credhub 2.9.0
-        asdf install fly v7.0.0
-        asdf install govc v0.24.0
+        asdf install fly 7.0.0
+        asdf install govc 0.24.0
         asdf install om 7.2.0
-        asdf install pivnet v0.0.78
-        asdf install s5cmd v1.2.1
+        asdf install pivnet 0.0.78
+        asdf install s5cmd 1.2.1
 
         
