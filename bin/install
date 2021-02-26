@@ -28,7 +28,7 @@ case $file_name in
     ;;
   bosh)
     readonly github_project=cloudfoundry/bosh-cli
-    readonly git_file_name_template="v${version}/bosh-cli-${version}-${os}-amd64.tgz"
+    readonly git_file_name_template="v${version}/bosh-cli-${version}-${os}-amd64"
     ;;
   credhub)
     readonly github_project=cloudfoundry-incubator/credhub-cli
