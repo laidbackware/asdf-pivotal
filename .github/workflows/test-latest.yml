@@ -12,6 +12,7 @@ jobs:
     - name: Install asdf and checkout latest tag
       run: |
         git clone https://github.com/asdf-vm/asdf.git ~/.asdf
+        cd ~/.asdf
         latest_branch=$(git describe --abbrev=0)
         git checkout $latest_branch
     - name: Manually add plugings to repository
