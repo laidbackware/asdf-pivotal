@@ -17,7 +17,11 @@ jobs:
         git checkout $latest_branch
     - name: Manually add plugings to repository
       run: |
+        set -eux
         repo_dir=$HOME/.asdf/repository/plugins
+        ls -l $HOME/.asdf
+        ls -l $HOME/.asdf/repository
+        ll -l $HOME/.asdf/repository/plugins
         plugin_text="repository = https://github.com/laidbackware/asdf-github-tools"
         echo $plugin_text > ${repo_dir}/antctl
         echo $plugin_text > ${repo_dir}/bosh
