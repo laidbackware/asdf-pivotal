@@ -67,7 +67,7 @@ jobs:
         asdf install s5cmd latest
 
 
-  test-0.6.3:
+  test-0-6-3:
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
