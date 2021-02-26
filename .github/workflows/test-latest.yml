@@ -1,0 +1,102 @@
+name: test-plugins
+on: [push, pull_request]
+jobs:
+  test-latest:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: Install asdf and checkout latest tag
+      run: |
+        git clone https://github.com/asdf-vm/asdf.git ~/.asdf
+        latest_branch=$(git describe --abbrev=0)
+        git checkout $latest_branch
+    - name: Manually add plugings to repository
+      run: |
+        repo_dir=$HOME/.asdf/repository/plugins
+        plugin_text="repository = https://github.com/laidbackware/asdf-github-tools"
+        echo $plugin_text > ${repo_dir}/antctl
+        echo $plugin_text > ${repo_dir}/bosh
+        echo $plugin_text > ${repo_dir}/credhub
+        echo $plugin_text > ${repo_dir}/fly
+        echo $plugin_text > ${repo_dir}/govc
+        echo $plugin_text > ${repo_dir}/om
+        echo $plugin_text > ${repo_dir}/pivnet
+        echo $plugin_text > ${repo_dir}/s5cmd
+
+    - name: Test plugin
+      run: |
+        set -e
+        . $HOME/.asdf/asdf.sh
+        # set -x
+        echo "---> plugin-add"
+        asdf plugin add antctl
+        asdf plugin add bosh
+        asdf plugin add credhub
+        asdf plugin add fly
+        asdf plugin add govc
+        asdf plugin add om
+        asdf plugin add pivnet
+        asdf plugin add s5cmd
+        
+        echo "---> list-all"
+        asdf list all antctl
+        asdf list all bosh
+        asdf list all credhub
+        asdf list all fly
+        asdf list all govc
+        asdf list all om
+        asdf list all pivnet
+        asdf list all s5cmd
+
+        echo "---> install"
+        asdf install antctl latest
+        asdf install bosh latest
+        asdf install credhub latest
+        asdf install fly latest
+        asdf install govc latest
+        asdf install om latest
+        asdf install pivnet latest
+        asdf install s5cmd latest
+
+
+  # test-0.7.8:
+  #   strategy:
+  #     matrix:
+  #       os: [ubuntu-latest, macos-latest]
+  #   runs-on: ${{ matrix.os }}
+  #   steps:
+  #   - name: Checkout code
+  #     uses: actions/checkout@v2
+  #   - name: Install asdf
+  #     run: git clone https://github.com/asdf-vm/asdf.git ~/asdf --branch v0.7.8
+  #   - name: Test plugin
+  #     run: |
+  #       set -e -u
+  #       . $HOME/.asdf/asdf.sh
+  #       set -x
+  #       echo "---> plugin-add"
+  #       asdf plugin-add ytt ./
+  #       asdf plugin-add kbld ./
+  #       asdf plugin-add kapp ./
+  #       asdf plugin-add kwt ./
+  #       asdf plugin-add vendir ./
+  #       asdf plugin-add imgpkg ./
+  #       asdf plugin-add json2k8s ./
+  #       echo "---> list-all"
+  #       asdf list-all ytt
+  #       asdf list-all kbld
+  #       asdf list-all kapp
+  #       asdf list-all kwt
+  #       asdf list-all vendir
+  #       asdf list-all imgpkg
+  #       asdf list-all json2k8s
+  #       # TODO does not work for some reason:
+  #       # echo "---> plugin-test"
+  #       # asdf plugin-test kwt ./ 'kwt version'
+  #       # asdf plugin-test ytt ./ 'ytt version'
+  #       # asdf plugin-test kapp ./ 'kapp version'
+  #       # asdf plugin-test vendir ./ 'vendir version'
