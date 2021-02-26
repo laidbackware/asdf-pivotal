@@ -19,6 +19,7 @@ jobs:
       run: |
         set -eux
         . $HOME/.asdf/asdf.sh
+        asdf plugin add kubectl
         repo_dir=$HOME/.asdf/repository/plugins
         # mkdir -p $repo_dir
         ls -l $HOME/.asdf
