@@ -76,15 +76,15 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
     - name: Install asdf
-      run: git clone https://github.com/asdf-vm/asdf.git ~/asdf --branch v0.6.3
+      run: git clone https://github.com/asdf-vm/.asdf.git ~/asdf --branch v0.6.3
     - name: Manually add plugings to repository
       run: |
         set -ex
-        . $HOME/asdf/asdf.sh
+        . $HOME/.asdf/asdf.sh
         asdf plugin-add kubectl
-        ls -l $HOME/asdf/repository
+        ls -l $HOME/.asdf/repository
         tree $HOME/asdf/repository
-        repo_dir=$HOME/asdf/repository/plugins
+        repo_dir=$HOME/.asdf/repository/plugins
         plugin_text="repository = https://github.com/laidbackware/asdf-github-tools"
         echo $plugin_text > ${repo_dir}/antctl
         echo $plugin_text > ${repo_dir}/bosh
@@ -97,7 +97,7 @@ jobs:
     - name: Test plugin
       run: |
         set -e
-        . $HOME/asdf/asdf.sh
+        . $HOME/.asdf/asdf.sh
         set -xu
         echo "---> plugin-add"
         asdf plugin-add antctl
