@@ -81,7 +81,7 @@ jobs:
       run: |
         set -eux
         . $HOME/asdf/asdf.sh
-        asdf plugin add kubectl
+        asdf plugin-add kubectl
         repo_dir=$HOME/asdf/repository/plugins
         plugin_text="repository = https://github.com/laidbackware/asdf-github-tools"
         echo $plugin_text > ${repo_dir}/antctl
@@ -95,7 +95,7 @@ jobs:
     - name: Test plugin
       run: |
         set -e -u
-        . $HOME/.asdf/asdf.sh
+        . $HOME/asdf/asdf.sh
         set -x
         echo "---> plugin-add"
         asdf plugin-add antctl
