@@ -52,7 +52,7 @@ case $file_name in
     ;;
   s5cmd)
     readonly github_project=peak/s5cmd
-    readonly git_file_name_template="v${version}/s5cmd_${version}_${os/l/L}-64bit.tar.gz"
+    readonly git_file_name_template="v${version}/s5cmd_${version}_$(echo $os | sed 's/l/L/ s/darwin/macOS/')-64bit.tar.gz"
     ;;
   *)
     echo "Product ${product_name} is not currently supported"
