@@ -18,7 +18,9 @@ jobs:
     - name: Manually add plugings to repository
       run: |
         set -eux
+        . $HOME/.asdf/asdf.sh
         repo_dir=$HOME/.asdf/repository/plugins
+        # mkdir -p $repo_dir
         ls -l $HOME/.asdf
         ls -l $HOME/.asdf/repository
         ll -l $HOME/.asdf/repository/plugins
