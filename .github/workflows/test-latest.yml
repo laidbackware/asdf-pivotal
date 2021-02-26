@@ -79,7 +79,7 @@ jobs:
       run: git clone https://github.com/asdf-vm/asdf.git ~/asdf --branch v0.6.3
     - name: Manually add plugings to repository
       run: |
-        set -eux
+        set -ex
         . $HOME/asdf/asdf.sh
         asdf plugin-add kubectl
         repo_dir=$HOME/asdf/repository/plugins
@@ -94,7 +94,7 @@ jobs:
         echo $plugin_text > ${repo_dir}/s5cmd
     - name: Test plugin
       run: |
-        set -e -u
+        set -e
         . $HOME/asdf/asdf.sh
         set -x
         echo "---> plugin-add"
