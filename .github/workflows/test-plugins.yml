@@ -35,7 +35,10 @@ jobs:
       run: |
         set -e
         . $HOME/.asdf/asdf.sh
-        # set -x
+
+        asdf info
+
+        set -x
         echo "---> plugin-add"
         asdf plugin add antctl
         asdf plugin add bosh
@@ -45,16 +48,17 @@ jobs:
         asdf plugin add om
         asdf plugin add pivnet
         asdf plugin add s5cmd
+        asdf plugin add velero
         
-        echo "---> list-all"
-        asdf list all antctl
-        asdf list all bosh
-        asdf list all credhub
-        asdf list all fly
-        asdf list all govc
-        asdf list all om
-        asdf list all pivnet
-        asdf list all s5cmd
+        # echo "---> list-all"
+        # asdf list all antctl
+        # asdf list all bosh
+        # asdf list all credhub
+        # asdf list all fly
+        # asdf list all govc
+        # asdf list all om
+        # asdf list all pivnet
+        # asdf list all s5cmd
 
         echo "---> install"
         asdf install antctl latest
@@ -65,7 +69,6 @@ jobs:
         asdf install om latest
         asdf install pivnet latest
         asdf install s5cmd latest
-
 
   test-0-6-3:
     strategy:
@@ -81,6 +84,9 @@ jobs:
       run: |
         set -ex
         . $HOME/.asdf/asdf.sh
+
+        asdf info
+
         asdf plugin-add kubectl
         repo_dir=$HOME/.asdf/repository/plugins
         plugin_text="repository = https://github.com/laidbackware/asdf-github-tools"
@@ -125,5 +131,3 @@ jobs:
         asdf install om 7.2.0
         asdf install pivnet 0.0.78
         asdf install s5cmd 1.2.1
-
-        
