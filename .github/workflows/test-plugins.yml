@@ -11,64 +11,23 @@ jobs:
       uses: actions/checkout@v2
     - name: Install asdf and checkout latest tag
       run: |
-        git clone https://github.com/asdf-vm/asdf.git ~/.asdf
-        cd ~/.asdf
-        latest_branch=$(git describe --abbrev=0)
-        git checkout $latest_branch
-    - name: Manually add plugings to repository
-      run: |
-        set -eux
-        . $HOME/.asdf/asdf.sh
-        asdf plugin add kubectl
-        repo_dir=$HOME/.asdf/repository/plugins
-        plugin_text="repository = https://github.com/laidbackware/asdf-github-tools"
-        echo $plugin_text > ${repo_dir}/antctl
-        echo $plugin_text > ${repo_dir}/bosh
-        echo $plugin_text > ${repo_dir}/credhub
-        echo $plugin_text > ${repo_dir}/fly
-        echo $plugin_text > ${repo_dir}/govc
-        echo $plugin_text > ${repo_dir}/om
-        echo $plugin_text > ${repo_dir}/pivnet
-        echo $plugin_text > ${repo_dir}/s5cmd
+        set -e
+        
+        if [ -n "$GITHUB_RUN_ID" ]; then
+            export GITHUB_API_TOKEN="${{ secrets.GITHUB_TOKEN }}"
+        fi
 
-    - name: Test plugin
+        ./tests/setup-env.sh
+
+    - name: Test asdf script
       run: |
         set -e
-        . $HOME/.asdf/asdf.sh
 
-        asdf info
+        if [ -n "$GITHUB_RUN_ID" ]; then
+            export GITHUB_API_TOKEN="${{ secrets.GITHUB_TOKEN }}"
+        fi
 
-        set -x
-        echo "---> plugin-add"
-        asdf plugin add antctl
-        asdf plugin add bosh
-        asdf plugin add credhub
-        asdf plugin add fly
-        asdf plugin add govc
-        asdf plugin add om
-        asdf plugin add pivnet
-        asdf plugin add s5cmd
-        asdf plugin add velero
-        
-        # echo "---> list-all"
-        # asdf list all antctl
-        # asdf list all bosh
-        # asdf list all credhub
-        # asdf list all fly
-        # asdf list all govc
-        # asdf list all om
-        # asdf list all pivnet
-        # asdf list all s5cmd
-
-        echo "---> install"
-        asdf install antctl latest
-        asdf install bosh latest
-        asdf install credhub latest
-        asdf install fly latest
-        asdf install govc latest
-        asdf install om latest
-        asdf install pivnet latest
-        asdf install s5cmd latest
+        ./tests/run-tests.sh
 
   test-0-6-3:
     strategy:
@@ -82,52 +41,21 @@ jobs:
       run: git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.6.3
     - name: Manually add plugings to repository
       run: |
-        set -ex
-        . $HOME/.asdf/asdf.sh
+        set -e
+        export ASDF_LEGACY=true
 
-        asdf info
+        if [ -n "$GITHUB_RUN_ID" ]; then
+            export GITHUB_API_TOKEN="${{ secrets.GITHUB_TOKEN }}"
+        fi
 
-        asdf plugin-add kubectl
-        repo_dir=$HOME/.asdf/repository/plugins
-        plugin_text="repository = https://github.com/laidbackware/asdf-github-tools"
-        echo $plugin_text > ${repo_dir}/antctl
-        echo $plugin_text > ${repo_dir}/bosh
-        echo $plugin_text > ${repo_dir}/credhub
-        echo $plugin_text > ${repo_dir}/fly
-        echo $plugin_text > ${repo_dir}/govc
-        echo $plugin_text > ${repo_dir}/om
-        echo $plugin_text > ${repo_dir}/pivnet
-        echo $plugin_text > ${repo_dir}/s5cmd
+        ./tests/setup-env.sh
     - name: Test plugin
       run: |
         set -e
-        . $HOME/.asdf/asdf.sh
-        set -xu
-        echo "---> plugin-add"
-        asdf plugin-add antctl
-        asdf plugin-add bosh
-        asdf plugin-add credhub
-        asdf plugin-add fly
-        asdf plugin-add govc
-        asdf plugin-add om
-        asdf plugin-add pivnet
-        asdf plugin-add s5cmd
+        export ASDF_LEGACY=true
 
-        echo "---> list-all"
-        asdf list-all antctl
-        asdf list-all bosh
-        asdf list-all credhub
-        asdf list-all fly
-        asdf list-all govc
-        asdf list-all om
-        asdf list-all pivnet
-        asdf list-all s5cmd
+        if [ -n "$GITHUB_RUN_ID" ]; then
+            export GITHUB_API_TOKEN="${{ secrets.GITHUB_TOKEN }}"
+        fi
 
-        asdf install antctl 0.13.0
-        asdf install bosh 6.4.1
-        asdf install credhub 2.9.0
-        asdf install fly 7.0.0
-        asdf install govc 0.24.0
-        asdf install om 7.2.0
-        asdf install pivnet 0.0.78
-        asdf install s5cmd 1.2.1
+        ./tests/run-tests.sh
