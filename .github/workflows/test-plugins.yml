@@ -12,7 +12,7 @@ jobs:
     - name: Install asdf and checkout latest tag
       run: |
         set -e
-        
+
         if [ -n "$GITHUB_RUN_ID" ]; then
             export GITHUB_API_TOKEN="${{ secrets.GITHUB_TOKEN }}"
         fi
@@ -37,8 +37,6 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
-    - name: Install asdf
-      run: git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch v0.6.3
     - name: Manually add plugings to repository
       run: |
         set -e
