@@ -4,9 +4,10 @@ RUN set -xe \
     && echo "****** Install system dependencies ******" \
     && apt update \
     && export DEBIAN_FRONTEND=noninteractive \
-    && apt-add-repository -y "ppa:fish-shell/nightly-master" \
+    && apt install -y software-properties-common \
+    && add-apt-repository -y "ppa:fish-shell/nightly-master" \
     && apt install -y --no-install-recommends \
-        ca-certificates libarchive-tools curl unzip git fish  \
+        ca-certificates libarchive-tools curl unzip git fish vim  \
     \
     && apt autoremove -y \
     && rm -Rf /var/lib/apt/lists/* \

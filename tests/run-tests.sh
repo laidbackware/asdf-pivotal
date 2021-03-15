@@ -3,17 +3,17 @@
 # This set of tests must be run in a clean environment
 # It can either be run in docker of github actions
 
-set -exo pipefail
+. $HOME/.asdf/asdf.sh
+
+set -euxo pipefail
 
 [[ -z ${DEBUGX:-} ]] || set -x
-trap 'set +x' EXIT
+# trap 'set +x' EXIT
 
 sep=" "
 [[ -z ${ASDF_LEGACY:-} ]] || sep="-"
 
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
-. $HOME/.asdf/asdf.sh
 
 repo_dir=$HOME/.asdf/repository/plugins
 plugin_text="repository = https://github.com/laidbackware/asdf-github-tools"
@@ -25,9 +25,15 @@ function test_plugin() {
   echo -e "\n#########################################"
   echo -e "####### Starting: ${plugin_name}\n"
 
+  if [[ "${DOCKER_MODE:-false}" == true ]]; then
+    rm -rf $HOME/.asdf/plugins/$plugin_name
+    cp -r $script_dir/.. $HOME/.asdf/plugins/$plugin_name
+  else
+    echo $plugin_text > ${repo_dir}/$plugin_name
+    asdf plugin${sep}add $plugin_name
+  fi
 
-  echo $plugin_text > ${repo_dir}/$plugin_name
-  asdf plugin${sep}add $plugin_name
+  ls -l $HOME/.asdf/plugins/$plugin_name/bin
 
   echo "Listing $plugin_name"
   asdf list${sep}all $plugin_name

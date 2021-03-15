@@ -5,122 +5,28 @@ set -euo pipefail
 # Detect the tool name based on the plugin directory name used by asdf
 readonly script_dir="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 readonly file_name="$(basename "$(dirname "${script_dir}")")"
-readonly os=$(uname -s |awk '{print tolower($0)}')
-readonly version=$ASDF_INSTALL_VERSION
-
-readonly download_dir="$(mktemp -d -t "asdf_${file_name}_XXXXXXXX")"
-trap 'rm -rf "${download_dir}"' EXIT
-
-# To add a product create a case statement matching the file name and add variables as follows
-  # github_project
-  # is the user/repository as taken from the github URL
-  # e.g the part in caps: https://github.com/CONCOURSE/CONCOURSE
-
-  # git_file_name_template
-  # the release file link template
-  # e.g what appears after the trailing slash: https://github.com/${github_project}/releases/download/
-  # For v7.0.0/fly-7.0.0-linux-amd64.tgz would be v${version}/fly-${version}-${os}-amd64.tgz
-
-case $file_name in
-  antctl)
-    readonly github_project=vmware-tanzu/antrea
-    readonly git_file_name_template="v${version}/antctl-${os}-x86_64"
-    ;;
-  bosh)
-    readonly github_project=cloudfoundry/bosh-cli
-    readonly git_file_name_template="v${version}/bosh-cli-${version}-${os}-amd64"
-    ;;
-  credhub)
-    readonly github_project=cloudfoundry-incubator/credhub-cli
-    readonly git_file_name_template="${version}/credhub-${os}-${version}.tgz"
-    ;;
-  fly)
-    readonly github_project=concourse/concourse
-    readonly git_file_name_template="v${version}/fly-${version}-${os}-amd64.tgz"
-    ;;
-  govc)
-    readonly github_project=vmware/govmomi
-    readonly git_file_name_template="v${version}/govc_${os}_amd64.gz"
-    ;;
-  om)
-    readonly github_project=pivotal-cf/om
-    readonly git_file_name_template="${version}/om-${os}-${version}"
-    ;;
-  pivnet)
-    readonly github_project=pivotal-cf/pivnet-cli
-    readonly git_file_name_template="v${version}/pivnet-${os}-amd64-${version}"
-    ;;
-  s5cmd)
-    readonly github_project=peak/s5cmd
-    readonly git_file_name_template="v${version}/s5cmd_${version}_$(echo $os | sed 's/l/L/; s/darwin/macOS/')-64bit.tar.gz"
-    ;;
-  *)
-    echo "Product ${product_name} is not currently supported"
-    exit 1
-    ;;
-esac
+readonly install_path=$ASDF_INSTALL_PATH
+readonly asdf_download_path=${ASDF_DOWNLOAD_PATH:-$(mktemp -d -t "asdf_${file_name}_XXXXXXXX")}
+trap 'rm -rf "${asdf_download_path}"' EXIT
 
 function install_binary() {
-  local -r install_type=$1
-  local -r install_path=$2
 
   local -r bin_install_path="${install_path}/bin"
-  local -r github_url="https://github.com/${github_project}/releases/download/$git_file_name_template"
-  local -r downloaded_file="${download_dir}/${file_name}_download"
+
+  if [[ -z "${ASDF_DOWNLOAD_PATH:-}" ]]; then
+    export ASDF_DOWNLOAD_PATH=$asdf_download_path
+    $script_dir/download
+  fi
 
   echo "Creating bin install directory"
   mkdir -p $bin_install_path
 
-  # Validate HTTP 200 OK on download by checking headers only
-  # This enables failure handling whilst also printing download progress
-  return=0 && check="$(curl --fail -L --head --connect-timeout 10 $github_url 2>&1)" || return="$?"
-  if [[ $return -eq 0 ]]; then
-    echo "Downloading $file_name version $version"
-    curl -L --output $downloaded_file $github_url
-    extract_and_move $downloaded_file $bin_install_path
-  else
-    local -r error_message=$(curl --silent -L $github_url 2>&1)
-    echo "ERROR: Failure download $file_name version $version" >&2
-    echo "Attempted URL: $github_url" >&2
-    echo "Error message: $error_message" >&2
-    exit 1
-  fi
-}
-
-function extract_and_move() {
-  local -r downloaded_file=$1
-  local -r install_path=$2
-
-  # Removing existing binary
-  echo "Cleaning $file_name version $version from bin directory"
-  rm -rf ${bin_install_path}/${file_name}
-
-  if [[ $git_file_name_template == *".tar.gz" ]] || [[ $git_file_name_template == *".tgz" ]]; then
-    echo "Extracting tar for $file_name"
-    tar xvfz $downloaded_file -C $download_dir/ > /dev/null
-    rm $downloaded_file
-
-    # Select the largest extracted file starting with file_name 
-    extracted_file="$(ls -d -1 ${download_dir}/${file_name}* |head -n 1)"
-    # if tar outputs a directory, select the largest file as the target
-    if [[ -d ${extracted_file} ]]; then
-      extracted_file=$(ls -Sd -1 ${extracted_file}/* |head -n 1)
-    fi
-
-    mv $extracted_file ${bin_install_path}/${file_name}
-    
-  elif [[ ${git_file_name_template} == *".gz" ]]; then
-    echo "Extracting gunzip for $file_name"
-    gzip -dc ${downloaded_file} > ${bin_install_path}/${file_name} # &> /dev/null
-  
-  else
-    mv $downloaded_file ${bin_install_path}/${file_name}
-
-  fi
+  mv $asdf_download_path/* ${bin_install_path}/${file_name}
 
   echo "Setting ${bin_install_path}/${file_name} as executable"
   chmod +x ${bin_install_path}/${file_name}
 
 }
 
-install_binary $ASDF_INSTALL_TYPE $ASDF_INSTALL_PATH
+
+install_binary
