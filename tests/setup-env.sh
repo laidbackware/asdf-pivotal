@@ -18,8 +18,6 @@ else
   sep="-"
 fi
 
-script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-
 . $HOME/.asdf/asdf.sh
 asdf plugin${sep}add kubectl
 

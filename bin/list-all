@@ -52,25 +52,19 @@ case $file_name in
     ;;
 esac
 
-# # borrowed from https://github.com/rbenv/ruby-build/pull/631/files#diff-fdcfb8a18714b33b07529b7d02b54f1dR942
-# function sort_versions() {
-#   sed 'h; s/[+-]/./g; s/.p\([[:digit:]]\)/.z\1/; s/$/.z/; G; s/\n/ /' | \
-#     LC_ALL=C sort -t. -k 1,1 -k 2,2n -k 3,3n -k 4,4n -k 5,5n | \
-#     awk '{print $2}'
-# }
-
 function list_all() {
-  local versions
 
+  local curl_response
+  local versions
   local -r github_url="https://api.github.com/repos/${github_repo_path}/releases"
 
-  curl_cmd="curl -Ls"
+  local curl_cmd="curl -Ls"
   if [ -n "${GITHUB_API_TOKEN:-}" ]; then
     curl_cmd="$curl_cmd -H 'Authorization: token $GITHUB_API_TOKEN'"
   fi
 
   
-  ret=0 && curl_response=$(eval "$curl_cmd --fail $github_url" 2>&1) || ret="$?"
+  local ret=0 && curl_response=$(eval "$curl_cmd --fail $github_url" 2>&1) || ret="$?"
   if [[ $ret -eq 0 ]]; then
     # Fetch all tag names, and get only second column. Then remove all unnecesary characters.
     versions=$(echo $curl_response | grep -oE "tag_name\": *\".{1,15}\"," | sed 's/tag_name\": *\"//;s/\",//; 's/v//g'' | \
@@ -78,7 +72,7 @@ function list_all() {
     echo $versions
 
   else
-    error=$(eval "$curl_cmd $github_url" 2>&1)
+    local error=$(eval "$curl_cmd $github_url" 2>&1)
     echo "ERROR: Failure to collect versions for $file_name"
     echo "Error message: $error"
     exit 1

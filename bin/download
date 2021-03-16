@@ -121,7 +121,7 @@ function download_binary() {
 
   # Validate HTTP 200 OK on download by checking headers only
   # This enables failure handling whilst also printing download progress
-  return=0 && check="$(curl --fail -L --head --connect-timeout 10 $github_url 2>&1)" || return="$?"
+  local return=0 && check="$(curl --fail -L --head --connect-timeout 10 $github_url 2>&1)" || return="$?"
   if [[ $return -eq 0 ]]; then
     echo "Downloading $file_name version $version"
     curl -L --output $downloaded_file $github_url
