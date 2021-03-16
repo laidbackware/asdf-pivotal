@@ -5,9 +5,8 @@
 
 . $HOME/.asdf/asdf.sh
 
-set -euxo pipefail
-
 [[ -z ${DEBUGX:-} ]] || set -x
+set -euo pipefail
 
 sep=" "
 [[ -z ${ASDF_LEGACY:-} ]] || sep="-"
@@ -24,7 +23,7 @@ function test_plugin() {
   echo -e "\n#########################################"
   echo -e "####### Starting: ${plugin_name}\n"
 
-  echo "Addming plugin $plugin_name"
+  echo "Adding plugin $plugin_name"
   asdf plugin${sep}add $plugin_name https://github.com/laidbackware/asdf-github-tools
 
   echo "Listing $plugin_name"

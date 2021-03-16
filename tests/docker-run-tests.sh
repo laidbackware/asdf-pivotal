@@ -1,8 +1,7 @@
 #!/bin/bash
 
-set -uo pipefail
-
 [[ -z ${DEBUGX:-} ]] || set -x
+set -uo pipefail
 
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
