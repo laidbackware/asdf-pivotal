@@ -6,7 +6,7 @@ set -uo pipefail
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 docker run --rm --volume ${script_dir}/../:/workspace \
-  --env DEBUGX=$DEBUGX \
+  --env DEBUGX=${DEBUGX:-} \
   --env GITHUB_API_TOKEN=${GITHUB_API_TOKEN:-} \
   --env DOCKER_MODE=true \
   laidbackware/asdf-tools-test:v1 \
@@ -20,7 +20,7 @@ if [[ $return_code -ne 0 ]]; then
 fi
 
 docker run --rm --volume ${script_dir}/../:/workspace \
-  --env DEBUGX=$DEBUGX \
+  --env DEBUGX=${DEBUGX:-} \
   --env GITHUB_API_TOKEN=${GITHUB_API_TOKEN:-} \
   --env DOCKER_MODE=true \
   laidbackware/asdf-tools-test:v1 \
