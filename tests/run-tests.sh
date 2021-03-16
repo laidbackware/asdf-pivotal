@@ -8,15 +8,14 @@
 set -euxo pipefail
 
 [[ -z ${DEBUGX:-} ]] || set -x
-# trap 'set +x' EXIT
 
 sep=" "
 [[ -z ${ASDF_LEGACY:-} ]] || sep="-"
 
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-repo_dir=$HOME/.asdf/repository/plugins
-plugin_text="repository = https://github.com/laidbackware/asdf-github-tools"
+# repo_dir=$HOME/.asdf/repository/plugins
+# plugin_text="repository = https://github.com/laidbackware/asdf-github-tools"
 
 function test_plugin() {
   plugin_name=$1
@@ -25,15 +24,8 @@ function test_plugin() {
   echo -e "\n#########################################"
   echo -e "####### Starting: ${plugin_name}\n"
 
-  if [[ "${DOCKER_MODE:-false}" == true ]]; then
-    rm -rf $HOME/.asdf/plugins/$plugin_name
-    cp -r $script_dir/.. $HOME/.asdf/plugins/$plugin_name
-  else
-    echo $plugin_text > ${repo_dir}/$plugin_name
-    asdf plugin${sep}add $plugin_name
-  fi
-
-  ls -l $HOME/.asdf/plugins/$plugin_name/bin
+  echo "Addming plugin $plugin_name"
+  asdf plugin${sep}add $plugin_name https://github.com/laidbackware/asdf-github-tools
 
   echo "Listing $plugin_name"
   asdf list${sep}all $plugin_name
@@ -60,11 +52,18 @@ function test_plugin() {
   echo -e "#########################################\n"
 }
 
-test_plugin antctl test_not_possible
-test_plugin bosh --version
-test_plugin credhub --version
-test_plugin fly --version
-test_plugin govc version
-test_plugin om --version
-test_plugin pivnet version
-test_plugin s5cmd version
+function test_plugins() {
+  test_plugin kubelogin version
+  test_plugin antctl test_not_possible
+  test_plugin bosh --version
+  test_plugin credhub --version
+  test_plugin fly --version
+  test_plugin govc version
+  test_plugin imgpkg version
+  test_plugin om --version
+  test_plugin pivnet version
+  test_plugin sonobuoy version
+  test_plugin s5cmd version
+}
+
+test_plugins

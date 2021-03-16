@@ -2,6 +2,8 @@
 
 set -euo pipefail
 
+[[ -z ${DEBUGX:-} ]] || set -x
+
 # Detect the tool name based on the plugin directory name used by asdf
 readonly script_dir="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 readonly file_name="$(basename "$(dirname "${script_dir}")")"
@@ -12,46 +14,58 @@ readonly download_dir="$(mktemp -d -t "asdf_${file_name}_XXXXXXXX")"
 trap 'rm -rf "${download_dir}"' EXIT
 
 # To add a product create a case statement matching the file name and add variables as follows
-  # github_project
+  # github_repo_path
   # is the user/repository as taken from the github URL
   # e.g the part in caps: https://github.com/CONCOURSE/CONCOURSE
 
   # git_file_name_template
   # the release file link template
-  # e.g what appears after the trailing slash: https://github.com/${github_project}/releases/download/
+  # e.g what appears after the trailing slash: https://github.com/${github_repo_path}/releases/download/
   # For v7.0.0/fly-7.0.0-linux-amd64.tgz would be v${version}/fly-${version}-${os}-amd64.tgz
 
 case $file_name in
   antctl)
-    readonly github_project=vmware-tanzu/antrea
+    readonly github_repo_path=vmware-tanzu/antrea
     readonly git_file_name_template="v${version}/antctl-${os}-x86_64"
     ;;
   bosh)
-    readonly github_project=cloudfoundry/bosh-cli
+    readonly github_repo_path=cloudfoundry/bosh-cli
     readonly git_file_name_template="v${version}/bosh-cli-${version}-${os}-amd64"
     ;;
   credhub)
-    readonly github_project=cloudfoundry-incubator/credhub-cli
+    readonly github_repo_path=cloudfoundry-incubator/credhub-cli
     readonly git_file_name_template="${version}/credhub-${os}-${version}.tgz"
     ;;
   fly)
-    readonly github_project=concourse/concourse
+    readonly github_repo_path=concourse/concourse
     readonly git_file_name_template="v${version}/fly-${version}-${os}-amd64.tgz"
     ;;
   govc)
-    readonly github_project=vmware/govmomi
+    readonly github_repo_path=vmware/govmomi
     readonly git_file_name_template="v${version}/govc_${os}_amd64.gz"
     ;;
+  imgpkg)
+    readonly github_repo_path=vmware-tanzu/carvel-imgpkg
+    readonly git_file_name_template="v${version}/imgpkg-${os}-amd64"
+    ;;
+  kubelogin)
+    readonly github_repo_path=int128/kubelogin
+    readonly git_file_name_template="v${version}/kubelogin_${os}_amd64.zip"
+    ;;
   om)
-    readonly github_project=pivotal-cf/om
+    readonly github_repo_path=pivotal-cf/om
     readonly git_file_name_template="${version}/om-${os}-${version}"
     ;;
   pivnet)
-    readonly github_project=pivotal-cf/pivnet-cli
+    readonly github_repo_path=pivotal-cf/pivnet-cli
     readonly git_file_name_template="v${version}/pivnet-${os}-amd64-${version}"
     ;;
+  sonobuoy)
+    readonly github_repo_path=vmware-tanzu/sonobuoy
+    readonly git_file_name_template="v${version}/sonobuoy_${version}_${os}_amd64.tar.gz"
+    ;;
   s5cmd)
-    readonly github_project=peak/s5cmd
+    readonly github_repo_path=peak/s5cmd
     readonly git_file_name_template="v${version}/s5cmd_${version}_${os/l/L}-64bit.tar.gz"
     ;;
   *)
@@ -60,9 +74,50 @@ case $file_name in
     ;;
 esac
 
+function extract_and_move() {
+
+  local -r downloaded_file=$1
+
+  if [[ $git_file_name_template == *".tar.gz" ]] || [[ $git_file_name_template == *".tgz" ]]; then
+    echo "Extracting tar for $file_name"
+    tar xvfz $downloaded_file -C $download_dir/ > /dev/null
+    move_largest_file $downloaded_file
+    
+  elif [[ ${git_file_name_template} == *".gz" ]]; then
+    echo "Extracting gunzip for $file_name"
+    gzip -dc ${downloaded_file} > ${asdf_download_path}/${file_name}
+  
+  elif [[ ${git_file_name_template} == *".zip" ]]; then
+    echo "Extracting zip for $file_name"
+    unzip ${downloaded_file} -d ${download_dir} #> /dev/null
+    move_largest_file $downloaded_file
+
+  else
+    mv $downloaded_file ${asdf_download_path}/${file_name}
+
+  fi
+}
+
+function move_largest_file() {
+
+  local -r downloaded_file=$1
+  rm $downloaded_file
+
+  # Select the largest extracted file starting with file_name 
+  extracted_file="$(ls -d -1 ${download_dir}/${file_name}* |head -n 1)"
+
+  # if tar/zip outputs a directory, select the largest file as the target
+  if [[ -d ${extracted_file} ]]; then
+    extracted_file=$(ls -Sd -1 ${extracted_file}/* |head -n 1)
+
+  fi
+
+  mv $extracted_file ${asdf_download_path}/${file_name}
+}
+
 function download_binary() {
 
-  local -r github_url="https://github.com/${github_project}/releases/download/$git_file_name_template"
+  local -r github_url="https://github.com/${github_repo_path}/releases/download/$git_file_name_template"
   local -r downloaded_file="${download_dir}/${file_name}_download"
 
   # Validate HTTP 200 OK on download by checking headers only
@@ -72,42 +127,15 @@ function download_binary() {
     echo "Downloading $file_name version $version"
     curl -L --output $downloaded_file $github_url
     extract_and_move $downloaded_file
+
   else
     local -r error_message=$(curl --silent -L $github_url 2>&1)
     echo "ERROR: Failure download $file_name version $version" >&2
     echo "Attempted URL: $github_url" >&2
     echo "Error message: $error_message" >&2
     exit 1
-  fi
-}
-
-function extract_and_move() {
-  local -r downloaded_file=$1
-
-  if [[ $git_file_name_template == *".tar.gz" ]] || [[ $git_file_name_template == *".tgz" ]]; then
-    echo "Extracting tar for $file_name"
-    tar xvfz $downloaded_file -C $download_dir/ > /dev/null
-    rm $downloaded_file
-
-    # Select the largest extracted file starting with file_name 
-    extracted_file="$(ls -d -1 ${download_dir}/${file_name}* |head -n 1)"
-    # if tar outputs a directory, select the largest file as the target
-    if [[ -d ${extracted_file} ]]; then
-      extracted_file=$(ls -Sd -1 ${extracted_file}/* |head -n 1)
-    fi
-
-    mv $extracted_file ${asdf_download_path}/${file_name}
-    
-  elif [[ ${git_file_name_template} == *".gz" ]]; then
-    echo "Extracting gunzip for $file_name"
-    gzip -dc ${downloaded_file} > ${asdf_download_path}/${file_name} # &> /dev/null
-  
-  else
-    mv $downloaded_file ${asdf_download_path}/${file_name}
 
   fi
-
 }
-
 
 download_binary

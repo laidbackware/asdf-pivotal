@@ -2,6 +2,8 @@
 
 set -euo pipefail
 
+[[ -z ${DEBUGX:-} ]] || set -x
+
 # Detect the tool name based on the plugin directory name used by asdf
 readonly script_dir="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 readonly file_name="$(basename "$(dirname "${script_dir}")")"
@@ -27,17 +29,26 @@ case $file_name in
   govc)
     readonly github_repo_path=vmware/govmomi
     ;;
+  imgpkg)
+    readonly github_repo_path=vmware-tanzu/carvel-imgpkg
+    ;;
+  kubelogin)
+    readonly github_repo_path=int128/kubelogin
+    ;;
   om)
     readonly github_repo_path=pivotal-cf/om
     ;;
   pivnet)
     readonly github_repo_path=pivotal-cf/pivnet-cli
     ;;
+  sonobuoy)
+    readonly github_repo_path=vmware-tanzu/sonobuoy
+    ;;
   s5cmd)
     readonly github_repo_path=peak/s5cmd
     ;;
   *)
-    echo "Product ${product_name} is not currently supported"
+    echo "Product ${file_name} is not currently supported"
     exit 1
     ;;
 esac

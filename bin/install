@@ -2,6 +2,8 @@
 
 set -euo pipefail
 
+[[ -z ${DEBUGX:-} ]] || set -x
+
 # Detect the tool name based on the plugin directory name used by asdf
 readonly script_dir="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 readonly file_name="$(basename "$(dirname "${script_dir}")")"
@@ -20,12 +22,9 @@ function install_binary() {
 
   echo "Creating bin install directory"
   mkdir -p $bin_install_path
-
   mv $asdf_download_path/* ${bin_install_path}/${file_name}
-
   echo "Setting ${bin_install_path}/${file_name} as executable"
   chmod +x ${bin_install_path}/${file_name}
-
 }
 
 
