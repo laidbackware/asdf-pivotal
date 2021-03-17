@@ -13,9 +13,6 @@ sep=" "
 
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-# repo_dir=$HOME/.asdf/repository/plugins
-# plugin_text="repository = https://github.com/laidbackware/asdf-github-tools"
-
 function test_plugin() {
   plugin_name=$1
   version_command=$2
@@ -24,7 +21,7 @@ function test_plugin() {
   echo -e "####### Starting: ${plugin_name}\n"
 
   echo "Adding plugin $plugin_name"
-  asdf plugin${sep}add $plugin_name https://github.com/laidbackware/asdf-github-tools
+  asdf plugin${sep}add $plugin_name https://github.com/laidbackware/asdf-github-release-downloader
 
   echo "Listing $plugin_name"
   asdf list${sep}all $plugin_name

@@ -1,4 +1,4 @@
-# asdf-github-tools
+# asdf-github-release-downloader
 ASDF plugin to install tools from github
 
 ## Supported Tools
@@ -17,6 +17,6 @@ ASDF plugin to install tools from github
 ## Installation
 To manually install use:
 ```
-asdf plugin-add <tool name> https://github.com/laidbackware/asdf-github-tools.git
+asdf plugin-add <tool name> https://github.com/laidbackware/asdf-github-release-downloader.git
 ```
 Soon to be built into ASDF.
