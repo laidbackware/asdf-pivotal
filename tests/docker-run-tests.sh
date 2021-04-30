@@ -13,7 +13,6 @@ docker run --rm --volume ${script_dir}/../:/workspace \
   bash -c "/workspace/tests/setup-env.sh && \
   /workspace/tests/run-tests.sh"
 
-
 return_code=$?
 if [[ $return_code -ne 0 ]]; then
   exit $return_code

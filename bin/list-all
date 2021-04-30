@@ -13,9 +13,6 @@ readonly file_name="$(basename "$(dirname "${script_dir}")")"
   # e.g the part in caps: https://github.com/CONCOURSE/CONCOURSE
 
 case $file_name in
-  antctl)
-    readonly github_repo_path=vmware-tanzu/antrea
-    ;;
   bosh)
     readonly github_repo_path=cloudfoundry/bosh-cli
     ;;
@@ -25,26 +22,11 @@ case $file_name in
   fly)
     readonly github_repo_path=concourse/concourse
     ;;
-  govc)
-    readonly github_repo_path=vmware/govmomi
-    ;;
-  imgpkg)
-    readonly github_repo_path=vmware-tanzu/carvel-imgpkg
-    ;;
-  kubelogin)
-    readonly github_repo_path=int128/kubelogin
-    ;;
   om)
     readonly github_repo_path=pivotal-cf/om
     ;;
   pivnet)
     readonly github_repo_path=pivotal-cf/pivnet-cli
-    ;;
-  sonobuoy)
-    readonly github_repo_path=vmware-tanzu/sonobuoy
-    ;;
-  s5cmd)
-    readonly github_repo_path=peak/s5cmd
     ;;
   *)
     echo "Product ${file_name} is not currently supported"

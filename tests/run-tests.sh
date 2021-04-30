@@ -13,9 +13,32 @@ sep=" "
 
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+
+
 function test_plugin() {
-  plugin_name=$1
-  version_command=$2
+  local plugin_name=$1
+  local version_command
+  case $plugin_name in
+    bosh)
+      version_command="--version"
+      ;;
+    credhub)
+      version_command="--version"
+      ;;
+    fly)
+      version_command="--version"
+      ;;
+    om)
+      version_command="--version"
+      ;;
+    pivnet)
+      version_command="version"
+      ;;
+    *)
+      echo "Product ${file_name} is not currently supported"
+      exit 1
+      ;;
+  esac
 
   echo -e "\n#########################################"
   echo -e "####### Starting: ${plugin_name}\n"
@@ -49,17 +72,16 @@ function test_plugin() {
 }
 
 function test_plugins() {
-  test_plugin kubelogin version
-  test_plugin antctl test_not_possible
-  test_plugin bosh --version
-  test_plugin credhub --version
-  test_plugin fly --version
-  test_plugin govc version
-  test_plugin imgpkg version
-  test_plugin om --version
-  test_plugin pivnet version
-  test_plugin sonobuoy version
-  test_plugin s5cmd version
+  plugin_name=${1:-}
+  if [ -z "${plugin_name:-}" ]; then
+    test_plugin bosh
+    test_plugin credhub
+    test_plugin fly
+    test_plugin om
+    test_plugin pivnet
+  else
+    test_plugin $plugin_name
+  fi
 }
 
-test_plugins
+test_plugins ${1:-}

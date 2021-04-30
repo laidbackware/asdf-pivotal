@@ -1,4 +1,4 @@
-name: test-plugins
+name: test-pivnet
 on: [push, pull_request]
 jobs:
   test-latest:
@@ -27,7 +27,7 @@ jobs:
             export GITHUB_API_TOKEN="${{ secrets.GITHUB_TOKEN }}"
         fi
 
-        ./tests/run-tests.sh
+        ./tests/run-tests.sh pivnet
 
   test-0-6-3:
     strategy:
@@ -56,4 +56,4 @@ jobs:
             export GITHUB_API_TOKEN="${{ secrets.GITHUB_TOKEN }}"
         fi
 
-        ./tests/run-tests.sh
+        ./tests/run-tests.sh pivnet

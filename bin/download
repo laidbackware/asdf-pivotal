@@ -23,10 +23,6 @@ trap 'rm -rf "${download_dir}"' EXIT
   # For v7.0.0/fly-7.0.0-linux-amd64.tgz would be v${version}/fly-${version}-${os}-amd64.tgz
 
 case $file_name in
-  antctl)
-    readonly github_repo_path=vmware-tanzu/antrea
-    readonly git_file_name_template="v${version}/antctl-${os}-x86_64"
-    ;;
   bosh)
     readonly github_repo_path=cloudfoundry/bosh-cli
     readonly git_file_name_template="v${version}/bosh-cli-${version}-${os}-amd64"
@@ -39,18 +35,6 @@ case $file_name in
     readonly github_repo_path=concourse/concourse
     readonly git_file_name_template="v${version}/fly-${version}-${os}-amd64.tgz"
     ;;
-  govc)
-    readonly github_repo_path=vmware/govmomi
-    readonly git_file_name_template="v${version}/govc_${os}_amd64.gz"
-    ;;
-  imgpkg)
-    readonly github_repo_path=vmware-tanzu/carvel-imgpkg
-    readonly git_file_name_template="v${version}/imgpkg-${os}-amd64"
-    ;;
-  kubelogin)
-    readonly github_repo_path=int128/kubelogin
-    readonly git_file_name_template="v${version}/kubelogin_${os}_amd64.zip"
-    ;;
   om)
     readonly github_repo_path=pivotal-cf/om
     readonly git_file_name_template="${version}/om-${os}-${version}"
@@ -58,14 +42,6 @@ case $file_name in
   pivnet)
     readonly github_repo_path=pivotal-cf/pivnet-cli
     readonly git_file_name_template="v${version}/pivnet-${os}-amd64-${version}"
-    ;;
-  sonobuoy)
-    readonly github_repo_path=vmware-tanzu/sonobuoy
-    readonly git_file_name_template="v${version}/sonobuoy_${version}_${os}_amd64.tar.gz"
-    ;;
-  s5cmd)
-    readonly github_repo_path=peak/s5cmd
-    readonly git_file_name_template="v${version}/s5cmd_${version}_$(echo $os | sed 's/l/L/; s/darwin/macOS/')-64bit.tar.gz"
     ;;
   *)
     echo "Product ${product_name} is not currently supported"
