@@ -12,104 +12,70 @@ readonly asdf_download_path=$ASDF_DOWNLOAD_PATH
 readonly download_dir="$(mktemp -d -t "asdf_${file_name}_XXXXXXXX")"
 trap 'rm -rf "${download_dir}"' EXIT
 
-# To add a product create a case statement matching the file name and add variables as follows
-  # github_repo_path
-  # is the user/repository as taken from the github URL
-  # e.g the part in caps: https://github.com/CONCOURSE/CONCOURSE
-
-  # git_file_name_template
-  # the release file link template
-  # e.g what appears after the trailing slash: https://github.com/${github_repo_path}/releases/download/
-  # For v7.0.0/fly-7.0.0-linux-amd64.tgz would be v${version}/fly-${version}-${os}-amd64.tgz
-
-case $file_name in
-  bosh)
-    readonly github_repo_path=cloudfoundry/bosh-cli
-    readonly git_file_name_template="v${version}/bosh-cli-${version}-${os}-amd64"
-    ;;
-  credhub)
-    readonly github_repo_path=cloudfoundry-incubator/credhub-cli
-    readonly git_file_name_template="${version}/credhub-${os}-${version}.tgz"
-    ;;
-  fly)
-    readonly github_repo_path=concourse/concourse
-    readonly git_file_name_template="v${version}/fly-${version}-${os}-amd64.tgz"
-    ;;
-  om)
-    readonly github_repo_path=pivotal-cf/om
-    readonly git_file_name_template="${version}/om-${os}-${version}"
-    ;;
-  pivnet)
-    readonly github_repo_path=pivotal-cf/pivnet-cli
-    readonly git_file_name_template="v${version}/pivnet-${os}-amd64-${version}"
-    ;;
-  bbr)
-    readonly github_repo_path=cloudfoundry-incubator/bosh-backup-and-restore
-    readonly git_file_name_template="v${version}/bbr-${version}-${os}-amd64"
-    ;;
-  bbr-s3-config-validator)
-    readonly github_repo_path=cloudfoundry-incubator/bosh-backup-and-restore
-    readonly git_file_name_template="v${version}/bbr-s3-config-validator-${version}-${os}-amd64"
-    ;;
-  *)
-    echo "Product ${file_name} is not currently supported"
-    exit 1
-    ;;
-esac
+. "${script_dir}/../products.inc.sh" "${file_name}" "${version}" "${os}"
 
 function extract_and_move() {
+  local -r downloaded_file="$1"
 
-  local -r downloaded_file=$1
-
-  if [[ $git_file_name_template == *".tar.gz" ]] || [[ $git_file_name_template == *".tgz" ]]; then
-    echo "Extracting tar for $file_name"
-    tar xvfz $downloaded_file -C $download_dir/ > /dev/null
-    move_largest_file $downloaded_file
-  elif [[ ${git_file_name_template} == *".gz" ]]; then
-    echo "Extracting gunzip for $file_name"
-    gzip -dc ${downloaded_file} > ${asdf_download_path}/${file_name}
-  elif [[ ${git_file_name_template} == *".zip" ]]; then
-    echo "Extracting zip for $file_name"
-    unzip ${downloaded_file} -d ${download_dir} #> /dev/null
-    move_largest_file $downloaded_file
-  else
-    mv $downloaded_file ${asdf_download_path}/${file_name}
-  fi
+  case "$GIT_FILE_NAME_TEMPLATE" in
+    *.tar.gz|*.tgz)
+      echo "Extracting tar for ${file_name}"
+      tar xvfz "${downloaded_file}" -C "${download_dir}/" > /dev/null
+      move_largest_file "${downloaded_file}"
+      ;;
+    *.gz)
+      echo "Extracting gzip for ${file_name}"
+      gzip -dc "${downloaded_file}" > "${asdf_download_path}/${file_name}"
+      ;;
+    *.zip)
+      echo "Extracting zip for ${file_name}"
+      unzip "${downloaded_file}" -d "${download_dir}" #> /dev/null
+      move_largest_file "${downloaded_file}"
+      ;;
+    *)
+      mv "${downloaded_file}" "${asdf_download_path}/${file_name}"
+      ;;
+  esac
 }
 
 function move_largest_file() {
-  local -r downloaded_file=$1
-  rm $downloaded_file
+  local -r downloaded_file="$1"
+  rm "${downloaded_file}"
 
-  # Select the largest extracted file starting with file_name 
-  extracted_file="$(ls -d -1 ${download_dir}/${file_name}* |head -n 1)"
+  # Select the largest extracted file starting with file_name
+  extracted_file="$( ls -d -1 "${download_dir}/${file_name}"* | head -n 1 )"
 
   # if tar/zip outputs a directory, select the largest file as the target
   if [[ -d ${extracted_file} ]]; then
-    extracted_file=$(ls -Sd -1 ${extracted_file}/* |head -n 1)
+    extracted_file="$( ls -Sd -1 "${extracted_file}/"* | head -n 1 )"
   fi
 
-  mv $extracted_file ${asdf_download_path}/${file_name}
+  mv "${extracted_file}" "${asdf_download_path}/${file_name}"
 }
 
 function download_binary() {
-  local -r github_url="https://github.com/${github_repo_path}/releases/download/$git_file_name_template"
+  local -r github_url="https://github.com/${REPO_SLUG}/releases/download/${GIT_FILE_NAME_TEMPLATE}"
   local -r downloaded_file="${download_dir}/${file_name}_download"
 
-  # Validate HTTP 200 OK on download by checking headers only
-  # This enables failure handling whilst also printing download progress
-  local return=0 && check="$(curl --fail -L --head --connect-timeout 10 $github_url 2>&1)" || return="$?"
-  if [[ $return -eq 0 ]]; then
-    echo "Downloading $file_name version $version"
-    curl -L --output $downloaded_file $github_url
-    extract_and_move $downloaded_file
-  else
-    local -r error_message=$(curl --silent -L $github_url 2>&1)
-    echo "ERROR: Failure download $file_name version $version" >&2
-    echo "Attempted URL: $github_url" >&2
-    echo "Error message: $error_message" >&2
-    exit 1
+  local curl_args=(
+    -L -s --fail
+    --output "$downloaded_file"
+  )
+  if [ -n "${GITHUB_API_TOKEN:-}" ]; then
+    curl_args+=( -H "Authorization: token ${GITHUB_API_TOKEN}" )
   fi
+
+  local response ret=0
+  response="$( curl "${curl_args[@]}" "$github_url" )" || ret=$?
+
+  if [[ $ret -ne 0 ]]; then
+    echo "ERROR: Failure to download ${file_name}"
+    echo "  Return code: ${ret}"
+    echo "  Response: ${response}"
+    return $ret
+  fi >&2
+
+  extract_and_move "${downloaded_file}"
 }
 
 download_binary

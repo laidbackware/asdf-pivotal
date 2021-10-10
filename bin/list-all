@@ -7,64 +7,31 @@ set -euo pipefail
 readonly script_dir="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 readonly file_name="$(basename "$(dirname "${script_dir}")")"
 
-# To add a product create a case statement matching the file name and add variables as follows
-  # github_repo_path
-  # is the user/repository as taken from the github URL
-  # e.g the part in caps: https://github.com/CONCOURSE/CONCOURSE
-
-case $file_name in
-  bosh)
-    readonly github_repo_path=cloudfoundry/bosh-cli
-    ;;
-  credhub)
-    readonly github_repo_path=cloudfoundry-incubator/credhub-cli
-    ;;
-  fly)
-    readonly github_repo_path=concourse/concourse
-    ;;
-  om)
-    readonly github_repo_path=pivotal-cf/om
-    ;;
-  pivnet)
-    readonly github_repo_path=pivotal-cf/pivnet-cli
-    ;;
-  bbr)
-    readonly github_repo_path=cloudfoundry-incubator/bosh-backup-and-restore
-    ;;
-  bbr-s3-config-validator)
-    readonly github_repo_path=cloudfoundry-incubator/bosh-backup-and-restore
-    ;;
-  *)
-    echo "Product ${file_name} is not currently supported"
-    exit 1
-    ;;
-esac
+. "${script_dir}/../products.inc.sh" "${file_name}"
 
 function list_all() {
-  local curl_response
-  local versions
-  local -r github_url="https://api.github.com/repos/${github_repo_path}/releases"
-
-  local curl_cmd="curl -Ls"
+  local github_url="https://api.github.com/repos/${REPO_SLUG}/releases"
+  local curl_args=( -L -s --fail )
   if [ -n "${GITHUB_API_TOKEN:-}" ]; then
-    curl_cmd="$curl_cmd -H 'Authorization: token $GITHUB_API_TOKEN'"
+    curl_args+=( -H "Authorization: token ${GITHUB_API_TOKEN}" )
   fi
 
-  local ret=0 && curl_response=$(eval "$curl_cmd --fail $github_url" 2>&1) || ret="$?"
-  if [[ $ret -eq 0 ]]; then
-    # Fetch all tag names, and get only second column. Then remove all unnecesary characters.
-    versions=$(echo $curl_response | grep -oE "tag_name\": *\".{1,15}\"," | sed 's/tag_name\": *\"//;s/\",//; 's/v//g'' | \
-      LC_ALL=C sort -t. -k 1,1 -k 2,2n -k 3,3n -k 4,4n -k 5,5n)
-    echo $versions
+  local curl_response ret=0
+  curl_response="$( curl "${curl_args[@]}" "$github_url" 2>&1 )" || ret="$?"
 
-  else
-    local error=$(eval "$curl_cmd $github_url" 2>&1)
-    echo "ERROR: Failure to collect versions for $file_name"
-    echo "Error message: $error"
-    exit 1
+  if [[ $ret -ne 0 ]]; then
+    echo "ERROR: Failure to collect versions for ${file_name}"
+    echo "  Return code: ${ret}"
+    echo "  Response: ${curl_response}"
+    return $ret
+  fi >&2
 
-  fi
-
+  # Fetch all tag names, and get only second column. Then remove all unnecesary characters.
+  echo "$curl_response" \
+    | grep -oE 'tag_name": *".{1,15}",' \
+    | sed 's/tag_name": *"// ; s/",// ; s/v//g' \
+    | LC_ALL=C sort -t. -k 1,1 -k 2,2n -k 3,3n -k 4,4n -k 5,5n \
+    | xargs
 }
 
 list_all

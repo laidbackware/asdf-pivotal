@@ -17,37 +17,11 @@ readonly PLUGIN_URI="${PLUGIN_URI:-https://github.com/laidbackware/asdf-pivotal}
 
 function test_plugin() {
   local plugin_name=$1
-  local version_command
-  case $plugin_name in
-    bosh)
-      version_command="--version"
-      ;;
-    credhub)
-      version_command="--version"
-      ;;
-    fly)
-      version_command="--version"
-      ;;
-    om)
-      version_command="--version"
-      ;;
-    pivnet)
-      version_command="version"
-      ;;
-    bbr)
-      version_command="--version"
-      ;;
-    bbr-s3-config-validator)
-      version_command="--help"
-      ;;
-    *)
-      echo "Product ${plugin_name} is not currently supported"
-      exit 1
-      ;;
-  esac
 
   echo -e "\n#########################################"
   echo -e "####### Starting: ${plugin_name}\n"
+
+  . "${script_dir}/../products.inc.sh" "${plugin_name}"
 
   echo "Adding plugin $plugin_name (from: $PLUGIN_URI)"
   asdf plugin${sep}add $plugin_name "$PLUGIN_URI"
@@ -67,10 +41,10 @@ function test_plugin() {
   installed_version=$(asdf list $plugin_name | xargs)
   asdf global $plugin_name $installed_version
 
-  if [[ $version_command != "test_not_possible" ]]; then
+  if [[ $VERSION_COMMAND != "test_not_possible" ]]; then
     echo -e "\nChecking $plugin_name is executable"
-    echo "Running command '$plugin_name $version_command'"
-    eval "$plugin_name $version_command"
+    echo "Running command '$plugin_name $VERSION_COMMAND'"
+    "$plugin_name" "$VERSION_COMMAND"
   fi
 
   echo -e "\n####### Finished: $plugin_name"
