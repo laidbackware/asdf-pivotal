@@ -34,6 +34,12 @@ function test_plugin() {
     pivnet)
       version_command="version"
       ;;
+    bbr)
+      version_command="--version"
+      ;;
+    bbr-s3-config-validator)
+      version_command="--help"
+      ;;
     *)
       echo "Product ${plugin_name} is not currently supported"
       exit 1

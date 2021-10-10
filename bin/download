@@ -43,8 +43,16 @@ case $file_name in
     readonly github_repo_path=pivotal-cf/pivnet-cli
     readonly git_file_name_template="v${version}/pivnet-${os}-amd64-${version}"
     ;;
+  bbr)
+    readonly github_repo_path=cloudfoundry-incubator/bosh-backup-and-restore
+    readonly git_file_name_template="v${version}/bbr-${version}-${os}-amd64"
+    ;;
+  bbr-s3-config-validator)
+    readonly github_repo_path=cloudfoundry-incubator/bosh-backup-and-restore
+    readonly git_file_name_template="v${version}/bbr-s3-config-validator-${version}-${os}-amd64"
+    ;;
   *)
-    echo "Product ${product_name} is not currently supported"
+    echo "Product ${file_name} is not currently supported"
     exit 1
     ;;
 esac
@@ -57,24 +65,19 @@ function extract_and_move() {
     echo "Extracting tar for $file_name"
     tar xvfz $downloaded_file -C $download_dir/ > /dev/null
     move_largest_file $downloaded_file
-    
   elif [[ ${git_file_name_template} == *".gz" ]]; then
     echo "Extracting gunzip for $file_name"
     gzip -dc ${downloaded_file} > ${asdf_download_path}/${file_name}
-  
   elif [[ ${git_file_name_template} == *".zip" ]]; then
     echo "Extracting zip for $file_name"
     unzip ${downloaded_file} -d ${download_dir} #> /dev/null
     move_largest_file $downloaded_file
-
   else
     mv $downloaded_file ${asdf_download_path}/${file_name}
-
   fi
 }
 
 function move_largest_file() {
-
   local -r downloaded_file=$1
   rm $downloaded_file
 
@@ -84,14 +87,12 @@ function move_largest_file() {
   # if tar/zip outputs a directory, select the largest file as the target
   if [[ -d ${extracted_file} ]]; then
     extracted_file=$(ls -Sd -1 ${extracted_file}/* |head -n 1)
-
   fi
 
   mv $extracted_file ${asdf_download_path}/${file_name}
 }
 
 function download_binary() {
-
   local -r github_url="https://github.com/${github_repo_path}/releases/download/$git_file_name_template"
   local -r downloaded_file="${download_dir}/${file_name}_download"
 
@@ -102,14 +103,12 @@ function download_binary() {
     echo "Downloading $file_name version $version"
     curl -L --output $downloaded_file $github_url
     extract_and_move $downloaded_file
-
   else
     local -r error_message=$(curl --silent -L $github_url 2>&1)
     echo "ERROR: Failure download $file_name version $version" >&2
     echo "Attempted URL: $github_url" >&2
     echo "Error message: $error_message" >&2
     exit 1
-
   fi
 }
 
