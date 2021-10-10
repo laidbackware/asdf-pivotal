@@ -5,26 +5,26 @@ set -uo pipefail
 
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-docker run --rm --volume ${script_dir}/../:/workspace \
-  --env DEBUGX=${DEBUGX:-} \
-  --env GITHUB_API_TOKEN=${GITHUB_API_TOKEN:-} \
-  --env DOCKER_MODE=true \
-  laidbackware/asdf-tools-test:v1 \
-  bash -c "/workspace/tests/setup-env.sh && \
-  /workspace/tests/run-tests.sh"
+docker_img='laidbackware/asdf-tools-test:v1'
+docker_cmd='./tests/setup-env.sh && ./tests/run-tests.sh "$@"'
+docker_args=(
+  --rm
+  --volume "${script_dir}/../:/workspace"
+  --env DEBUGX
+  --env GITHUB_API_TOKEN
+  --env DOCKER_MODE=true
+  --workdir /workspace
+  --env PLUGIN_URI
+)
+
+docker run "${docker_args[@]}" "${docker_img}" bash -c "${docker_cmd}" -- "$@"
 
 return_code=$?
 if [[ $return_code -ne 0 ]]; then
   exit $return_code
 fi
 
-docker run --rm --volume ${script_dir}/../:/workspace \
-  --env DEBUGX=${DEBUGX:-} \
-  --env GITHUB_API_TOKEN=${GITHUB_API_TOKEN:-} \
-  --env DOCKER_MODE=true \
-  laidbackware/asdf-tools-test:v1 \
-  bash -c "export ASDF_LEGACY=true && \
-  /workspace/tests/setup-env.sh && \
-  /workspace/tests/run-tests.sh"
+docker_args+=( --env ASDF_LEGACY=true )
+docker run "${docker_args[@]}" "${docker_img}" bash -c "${docker_cmd}" -- "$@"
 
 echo "Latest exit code: $?"

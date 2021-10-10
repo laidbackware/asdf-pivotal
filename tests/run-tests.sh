@@ -13,7 +13,7 @@ sep=" "
 
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-
+readonly PLUGIN_URI="${PLUGIN_URI:-https://github.com/laidbackware/asdf-pivotal}"
 
 function test_plugin() {
   local plugin_name=$1
@@ -35,7 +35,7 @@ function test_plugin() {
       version_command="version"
       ;;
     *)
-      echo "Product ${file_name} is not currently supported"
+      echo "Product ${plugin_name} is not currently supported"
       exit 1
       ;;
   esac
@@ -43,8 +43,8 @@ function test_plugin() {
   echo -e "\n#########################################"
   echo -e "####### Starting: ${plugin_name}\n"
 
-  echo "Adding plugin $plugin_name"
-  asdf plugin${sep}add $plugin_name https://github.com/laidbackware/asdf-github-release-downloader
+  echo "Adding plugin $plugin_name (from: $PLUGIN_URI)"
+  asdf plugin${sep}add $plugin_name "$PLUGIN_URI"
 
   echo "Listing $plugin_name"
   asdf list${sep}all $plugin_name
@@ -79,6 +79,8 @@ function test_plugins() {
     test_plugin fly
     test_plugin om
     test_plugin pivnet
+    test_plugin bbr
+    test_plugin bbr-s3-config-validator
   else
     test_plugin $plugin_name
   fi
