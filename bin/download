@@ -17,31 +17,39 @@ trap 'rm -rf "${download_dir}"' EXIT
   # is the user/repository as taken from the github URL
   # e.g the part in caps: https://github.com/CONCOURSE/CONCOURSE
 
-  # git_file_name_template
+  # primary_git_file_name_template
   # the release file link template
   # e.g what appears after the trailing slash: https://github.com/${github_repo_path}/releases/download/
   # For v7.0.0/fly-7.0.0-linux-amd64.tgz would be v${version}/fly-${version}-${os}-amd64.tgz
 
+  # primary_git_file_name_template
+  # added as a fall back in case naming standard changes as happened with om 7.8
+
 case $file_name in
   bosh)
     readonly github_repo_path=cloudfoundry/bosh-cli
-    readonly git_file_name_template="v${version}/bosh-cli-${version}-${os}-amd64"
+    readonly primary_git_file_name_template="v${version}/bosh-cli-${version}-${os}-amd64"
+    readonly secondary_git_file_name_template=""
     ;;
   credhub)
     readonly github_repo_path=cloudfoundry-incubator/credhub-cli
-    readonly git_file_name_template="${version}/credhub-${os}-${version}.tgz"
+    readonly primary_git_file_name_template="${version}/credhub-${os}-${version}.tgz"
+    readonly secondary_git_file_name_template=""
     ;;
   fly)
     readonly github_repo_path=concourse/concourse
-    readonly git_file_name_template="v${version}/fly-${version}-${os}-amd64.tgz"
+    readonly primary_git_file_name_template="v${version}/fly-${version}-${os}-amd64.tgz"
+    readonly secondary_git_file_name_template=""
     ;;
   om)
     readonly github_repo_path=pivotal-cf/om
-    readonly git_file_name_template="${version}/om-${os}-${version}"
+    readonly primary_git_file_name_template="${version}/om-${os}-amd64-${version}"
+    readonly secondary_git_file_name_template="${version}/om-${os}-${version}"
     ;;
   pivnet)
     readonly github_repo_path=pivotal-cf/pivnet-cli
-    readonly git_file_name_template="v${version}/pivnet-${os}-amd64-${version}"
+    readonly primary_git_file_name_template="v${version}/pivnet-${os}-amd64-${version}"
+    readonly secondary_git_file_name_template=""
     ;;
   *)
     echo "Product ${product_name} is not currently supported"
@@ -53,16 +61,16 @@ function extract_and_move() {
 
   local -r downloaded_file=$1
 
-  if [[ $git_file_name_template == *".tar.gz" ]] || [[ $git_file_name_template == *".tgz" ]]; then
+  if [[ $primary_git_file_name_template == *".tar.gz" ]] || [[ $primary_git_file_name_template == *".tgz" ]]; then
     echo "Extracting tar for $file_name"
     tar xvfz $downloaded_file -C $download_dir/ > /dev/null
     move_largest_file $downloaded_file
     
-  elif [[ ${git_file_name_template} == *".gz" ]]; then
+  elif [[ ${primary_git_file_name_template} == *".gz" ]]; then
     echo "Extracting gunzip for $file_name"
     gzip -dc ${downloaded_file} > ${asdf_download_path}/${file_name}
   
-  elif [[ ${git_file_name_template} == *".zip" ]]; then
+  elif [[ ${primary_git_file_name_template} == *".zip" ]]; then
     echo "Extracting zip for $file_name"
     unzip ${downloaded_file} -d ${download_dir} #> /dev/null
     move_largest_file $downloaded_file
@@ -91,7 +99,7 @@ function move_largest_file() {
 }
 
 function download_binary() {
-
+  local git_file_name_template=$1
   local -r github_url="https://github.com/${github_repo_path}/releases/download/$git_file_name_template"
   local -r downloaded_file="${download_dir}/${file_name}_download"
 
@@ -103,6 +111,10 @@ function download_binary() {
     curl -L --output $downloaded_file $github_url
     extract_and_move $downloaded_file
 
+  elif [ ! -z "$secondary_git_file_name_template" ] && [ ! -f ${download_dir}/secondard_attempt ]; then
+    touch ${download_dir}/secondard_attempt
+    download_binary $secondary_git_file_name_template
+
   else
     local -r error_message=$(curl --silent -L $github_url 2>&1)
     echo "ERROR: Failure download $file_name version $version" >&2
@@ -113,4 +125,4 @@ function download_binary() {
   fi
 }
 
-download_binary
+download_binary $primary_git_file_name_template

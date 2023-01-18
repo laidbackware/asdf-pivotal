@@ -12,6 +12,7 @@ sep=" "
 [[ -z ${ASDF_LEGACY:-} ]] || sep="-"
 
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+repo_dir="$script_dir/.."
 
 
 
@@ -44,7 +45,8 @@ function test_plugin() {
   echo -e "####### Starting: ${plugin_name}\n"
 
   echo "Adding plugin $plugin_name"
-  asdf plugin${sep}add $plugin_name https://github.com/laidbackware/asdf-github-release-downloader
+  mkdir -p ${HOME}/.asdf/plugins/${plugin_name}
+  cp -r $repo_dir ${HOME}/.asdf/plugins/${plugin_name}
 
   echo "Listing $plugin_name"
   asdf list${sep}all $plugin_name
@@ -74,11 +76,11 @@ function test_plugin() {
 function test_plugins() {
   plugin_name=${1:-}
   if [ -z "${plugin_name:-}" ]; then
+    test_plugin om
+    test_plugin pivnet
     test_plugin bosh
     test_plugin credhub
     test_plugin fly
-    test_plugin om
-    test_plugin pivnet
   else
     test_plugin $plugin_name
   fi
