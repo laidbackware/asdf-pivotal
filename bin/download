@@ -17,7 +17,7 @@ trap 'rm -rf "${download_dir}"' EXIT
 function extract_and_move() {
   local -r downloaded_file="$1"
 
-  case "$GIT_FILE_NAME_TEMPLATE" in
+  case "$PRIMARY_GIT_TEMPLATE" in
     *.tar.gz|*.tgz)
       echo "Extracting tar for ${file_name}"
       tar xvfz "${downloaded_file}" -C "${download_dir}/" > /dev/null
@@ -54,28 +54,35 @@ function move_largest_file() {
 }
 
 function download_binary() {
-  local -r github_url="https://github.com/${REPO_SLUG}/releases/download/${GIT_FILE_NAME_TEMPLATE}"
+  local git_file_name_template="$1"
+
+  local -r github_url="https://github.com/${REPO_SLUG}/releases/download/${git_file_name_template}"
   local -r downloaded_file="${download_dir}/${file_name}_download"
 
   local curl_args=(
-    -L -s --fail
-    --output "$downloaded_file"
+    -L
   )
-  if [ -n "${GITHUB_API_TOKEN:-}" ]; then
-    curl_args+=( -H "Authorization: token ${GITHUB_API_TOKEN}" )
+
+  # Validate HTTP 200 OK on download by checking headers only
+  # This enables failure handling whilst also printing download progress
+  local return=0 && check="$(curl "${curl_args[@]}" --fail --head --connect-timeout 10 "$github_url" 2>&1)" || return="$?"
+  if [[ $return -eq 0 ]]; then
+    echo "Downloading $file_name version $version"
+    curl "${curl_args[@]}" --output "$downloaded_file" "$github_url"
+    extract_and_move "$downloaded_file"
+
+  elif [ ! -z "$SECONDARY_GIT_TEMPLATE" ] && [ ! -f "${download_dir}/secondard_attempt" ]; then
+    touch "${download_dir}/secondard_attempt"
+    download_binary "$SECONDARY_GIT_TEMPLATE"
+
+  else
+    # Show the human readable error
+    local -r error_message=$(curl "${curl_args[@]}" --silent "$github_url" 2>&1)
+    echo "ERROR: Failure download $file_name version $version" >&2
+    echo "Attempted URL: $github_url" >&2
+    echo "Error message: $error_message" >&2
+    exit 1
   fi
-
-  local response ret=0
-  response="$( curl "${curl_args[@]}" "$github_url" )" || ret=$?
-
-  if [[ $ret -ne 0 ]]; then
-    echo "ERROR: Failure to download ${file_name}"
-    echo "  Return code: ${ret}"
-    echo "  Response: ${response}"
-    return $ret
-  fi >&2
-
-  extract_and_move "${downloaded_file}"
 }
 
-download_binary
+download_binary $PRIMARY_GIT_TEMPLATE
