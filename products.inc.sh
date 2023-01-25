@@ -74,6 +74,11 @@ setEnv() {
       return 2
       ;;
   esac
+  
+  # MISSING_PRODUCTS is used to highlight products that aren't available for an OS type
+  MISSING_PRODUCTS=(
+    "bbr-s3-config-validator_darwin"
+  )
 
   declare -rx REPO_SLUG GIT_FILE_NAME_TEMPLATE VERSION_COMMAND
 }
