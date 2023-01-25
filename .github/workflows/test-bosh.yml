@@ -1,5 +1,6 @@
 name: test-bosh
 on: [push, pull_request]
+
 jobs:
   test-latest:
     strategy:

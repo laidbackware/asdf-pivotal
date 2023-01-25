@@ -1,5 +1,6 @@
 name: test-fly
 on: [push, pull_request]
+
 jobs:
   test-latest:
     strategy:
