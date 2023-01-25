@@ -13,7 +13,7 @@ sep=" "
 
 script_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-readonly PLUGIN_URI="${PLUGIN_URI:-https://github.com/laidbackware/asdf-pivotal}"
+
 
 function test_plugin() {
   local plugin_name=$1
@@ -23,8 +23,8 @@ function test_plugin() {
 
   . "${script_dir}/../products.inc.sh" "${plugin_name}"
 
-  echo "Adding plugin $plugin_name (from: $PLUGIN_URI)"
-  asdf plugin${sep}add $plugin_name "$PLUGIN_URI"
+  echo "Adding plugin $plugin_name"
+  asdf plugin${sep}add $plugin_name https://github.com/laidbackware/asdf-github-release-downloader
 
   echo "Listing $plugin_name"
   asdf list${sep}all $plugin_name

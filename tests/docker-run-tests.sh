@@ -14,7 +14,6 @@ docker_args=(
   --env GITHUB_API_TOKEN
   --env DOCKER_MODE=true
   --workdir /workspace
-  --env PLUGIN_URI
 )
 
 docker run "${docker_args[@]}" "${docker_img}" bash -c "${docker_cmd}" -- "$@"

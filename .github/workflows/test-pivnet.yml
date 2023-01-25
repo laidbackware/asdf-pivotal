@@ -1,9 +1,6 @@
 name: test-pivnet
 on: [push, pull_request]
 
-env:
-  PLUGIN_URI: .
-
 jobs:
   test-latest:
     strategy:
