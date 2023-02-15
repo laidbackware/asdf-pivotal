@@ -1,3 +1,5 @@
+# <span style="color:red">**THIS REPO IS DEPRECATED - the new code can be found [here](https://github.com/vmware-tanzu/tanzu-plug-in-for-asdf)**</span>.
+
 # asdf-pivotal
 ASDF plugin to install tools from github.
 
